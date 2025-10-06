@@ -22,13 +22,13 @@ This is a free-to-use javascript drop-in to secure your website. It adds a brows
 ## Implementation Notes
 1. **Opt-out Mechanism**: 
   - Add `data-no-cache` attribute to links/forms to bypass cache interceptions
-    - Example 1: `<a href="/about.html">About Us</a> <!-- Will be cached -->`
-    - Example 2: `<a href="/secure-page.html" data-no-cache>Secure Page</a>`
+    - Example 1: `<a href="/about.html">About Us</a> <!-- Will serve cache -->`
+    - Example 2: `<a href="/secure-page.html" data-no-cache>Secure Page</a><!-- Will not serve cached -->`
 
 ## Performance Impact
 - Minimal runtime overhead (< 2ms initialization)
 - Zero ongoing CPU usage during idle
-- Network latency only during certificate validation
+- Processing latency only during decryption
 
 ## Security Considerations
 1. **Key Management**: The encryption key is hardcoded to interface with our browser extensions. If using your own key, please make sure you:
