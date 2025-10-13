@@ -121,7 +121,7 @@ async function getCachedPage(url) {
                     const age = Date.now() - request.result.timestamp;
                     if (age < CACHE_DURATION) {
                         resolve(request.result);
-                        console.info("Page was served with cycache.js.");
+                        console.info("Cydog served page with cy-cache.js.");
                     } else {
                         // Cache expired
                         resolve(null);
@@ -131,6 +131,7 @@ async function getCachedPage(url) {
                         };
                     }
                 } else {
+                    // No result
                     resolve(null);
                     window.onload = function() {
                       const contentCache = document.documentElement.outerHTML;
@@ -141,7 +142,7 @@ async function getCachedPage(url) {
             request.onerror = () => reject(request.error);
         });
     } catch (error) {
-        console.error('Cache retrieval error:', error);
+        console.error('Cydog had problem retrieving cache with error:', error);
         return null;
     }
 }
@@ -152,17 +153,16 @@ document.addEventListener('click', async (event) => {
     if (!link) return;
     
     const url = link.href;
-    if (url.startsWith('http') && !url.startsWith(window.location.origin)) {
-        return; // External link
+    if (url.startsWith('http') || url.startsWith(window.location.origin) || url.endsWith(".php")) {
+        return; // Internal or external protocol specified web links are filtered
     }
-    
-    event.preventDefault();
     
     // Check for no-cache attribute
     if (link.hasAttribute('data-no-cache')) {
-        window.location.href = url;
         return;
     }
+
+    event.preventDefault();
     
     // Check cache
     const cached = await getCachedPage(url);
@@ -171,22 +171,22 @@ document.addEventListener('click', async (event) => {
         document.open();
         document.write(decryptedContent);
         document.close();
-        console.info("Page was served with cycache.js.");
+        setURLState(url);
+        console.info("Cydog served page with cy-cache.js.");
     } else {
         // Fetch and cache
         try {
             const response = await fetch(url);
             const html = await response.text();
-            
             // Cache the page
             await cachePage(url, html);
-            
             document.open();
             document.write(html);
             document.close();
-            //console.log('Fetched and cached:', url);
+            setURLState(url);
+            console.info("Cydog served page with cy-cache.js.");
         } catch (error) {
-            console.error('Fetch error:', error);
+            console.error('Cydog had problem fetching with error:', error);
             window.location.href = url;
         }
     }
@@ -216,6 +216,12 @@ document.addEventListener('submit', (event) => {
         document.close();
     })
     .catch(error => {
-        console.error('Form submission error:', error);
+        console.error('Cydog had problem submitting form with error:', error);
+        window.location.reload();
     });
 });
+
+function setURLState(url){
+    const newState = { page: 'cydog-cache', pageId: Math.random() };
+	history.pushState(newState, document.title, url);
+}
